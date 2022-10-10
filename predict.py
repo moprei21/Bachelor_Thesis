@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_score
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import transformers
+import wandb
+
+wandb.init(project="my-test-project")
+
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
@@ -11,12 +15,14 @@ tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
 
 classifier = transformers.ZeroShotClassificationPipeline(model=nli_model, tokenizer=tokenizer)
 
-config_toxic = {'pos_label': [ 'Beleidigungen', 'Hass', 'Toxizität', 'Sarkasmus', 'Diskriminierungen' ],
+config_toxic = {'pos_label': [ 'Beleidigung' ],
                 'neg_label': '',
-                'hypo': 'Dieser Kommentar enthält {} gegen Personen',
+                'hypo': 'Dieser Text enthält eine {}',
                 'task': 'label',
                 'threshold': 0.5,
                 'multi_class': False}
+
+wandb.config = config_toxic
 
 
 def multi_hypo(config):
@@ -64,6 +70,8 @@ def eval_zero(predicted_labels, config):
 
     prec = precision_score(true_labels, predicted_labels)
     recall = recall_score(true_labels, predicted_labels)
+
+    wandb.log({'accuracy': acc, 'precision': prec, 'recall': recall, 'f1': f1})
 
     print(f'Accuracy: {acc}\n Precision: {prec}\n Recall: {recall}\n F1-Score: {f1}')
 
