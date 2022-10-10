@@ -14,7 +14,7 @@ classifier = transformers.ZeroShotClassificationPipeline(model=nli_model, tokeni
 config_toxic = {'pos_label': [ 'Beleidigungen', 'Hass', 'Toxizität', 'Sarkasmus', 'Diskriminierungen' ],
                 'neg_label': '',
                 'hypo': 'Dieser Kommentar enthält {} gegen Personen',
-                'task': 'Sub1_Toxic',
+                'task': 'label',
                 'threshold': 0.5,
                 'multi_class': False}
 
@@ -24,7 +24,7 @@ def multi_hypo(config):
     true_labels = [ ]
     for sequence in tqdm(df[ 'text' ].values):
         num_labels = len(config[ 'pos_label' ])
-        true_label = df[ config[ 'task' ] ].loc[ df[ 'comment_text' ] == sequence ].values[ 0 ]
+        true_label = df[ config[ 'task' ] ].loc[ df[ 'text' ] == sequence ].values[ 0 ]
         print(f'\n\nNEW sequence: {sequence}')
         pos_sequence_probability = 0
         neg_sequence_probability = 0
