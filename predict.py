@@ -5,6 +5,7 @@ from sklearn.metrics import f1_score, accuracy_score, recall_score, precision_sc
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import transformers
 import wandb
+import numpy as np
 
 wandb.init(project="my-test-project")
 
@@ -77,8 +78,18 @@ def eval_zero(predicted_labels, config):
 
 
 def main():
-    predicted_labels = multi_hypo(config_toxic)
-    eval_zero(predicted_labels, config_toxic)
+    thresholds = np.arange(0, 1, 0.1)
+    for threshold in thresholds:
+        config_toxic = {'pos_label': [ 'Beleidigung' ],
+                        'neg_label': '',
+                        'hypo': 'Dieser Text enthält eine {}',
+                        'task': 'label',
+                        'threshold': threshold,
+                        'multi_class': False}
+
+        wandb.config = config_toxic
+        predicted_labels = multi_hypo(config_toxic)
+        eval_zero(predicted_labels, config_toxic)
 
 
 if __name__ == "__main__":
