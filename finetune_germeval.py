@@ -16,6 +16,7 @@
 # limitations under the License.
 """ Finetuning multi-lingual models on XNLI (e.g. Bert, DistilBERT, XLM).
     Adapted from `examples/text-classification/run_glue.py`"""
+#python finetune_germeval.py --model_name_or_path Sahajtomar/German_Zeroshot --output_dir pretrain_out --language de --do_train y
 
 import logging
 import os
@@ -164,6 +165,10 @@ class ModelArguments:
         default=False,
         metadata={"help": "Will enable to load a pretrained model whose head dimensions are different."},
     )
+    filename: str = field (
+        default='data/mock_data.csv',
+        metadata = {"help": "Name of the trainfile"},
+    )
 
 
 def main():
@@ -224,7 +229,7 @@ def main():
         if model_args.train_language is None:
             train_dataset = load_dataset(
                 "csv",
-                data_files={"train":"data/mock_data.csv"},
+                data_files={"train":model_args.filename},
                 cache_dir=model_args.cache_dir,
                 use_auth_token=True if model_args.use_auth_token else None,
             )
