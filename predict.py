@@ -1,3 +1,5 @@
+import argparse
+
 import pandas as pd
 from tqdm import tqdm
 from dataclasses import dataclass
@@ -79,7 +81,8 @@ def eval_zero(predicted_labels, config):
     print(f'Accuracy: {acc}\n Precision: {prec}\n Recall: {recall}\n F1-Score: {f1}')
 
 
-def main():
+def main(args):
+    wandb.run.name = args.name
     thresholds = np.arange(0, 1, 0.1)
     for threshold in thresholds:
         config_toxic = {'pos_label': [ 'Beleidigung' ],
@@ -95,4 +98,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--name', type=str, help="name of wandb run")
+
+    args = parser.parse_args()
+
+    main(args)
