@@ -11,6 +11,8 @@ wandb.init(project="my-test-project")
 
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
+df = df.sample(frac=0.1,replace=True, random_state=1)
+
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
 tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
 
