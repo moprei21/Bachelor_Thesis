@@ -13,7 +13,8 @@ wandb.init(project="my-test-project")
 
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
-df = df.sample(frac=0.1,replace=True, random_state=1)
+# make smaller eval file
+df = df.sample(frac=0.1, replace=True, random_state=1)
 
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
 tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
@@ -36,7 +37,7 @@ def multi_hypo(config):
     for sequence in tqdm(df[ 'text' ].values):
         num_labels = len(config[ 'pos_label' ])
         true_label = df[ config[ 'task' ] ].loc[ df[ 'text' ] == sequence ].values[ 0 ]
-        print(f'\n\nNEW sequence: {sequence}')
+        # print(f'\n\nNEW sequence: {sequence}')
         pos_sequence_probability = 0
         neg_sequence_probability = 0
         for positive_label in config[ 'pos_label' ]:
@@ -45,7 +46,7 @@ def multi_hypo(config):
             labels = result[ 'labels' ]
             probs = result[ 'scores' ]
             pos_probability = probs[ 0 ]
-            print(labels, probs)
+            # print(labels, probs)
 
             pos_sequence_probability += pos_probability
 
@@ -58,7 +59,7 @@ def multi_hypo(config):
         if pos_sequence_probability > config[ 'threshold' ]:
             y_pred = 1
 
-        print(f'True label: {true_label}, Y_Pred: {y_pred}\n')
+        # print(f'True label: {true_label}, Y_Pred: {y_pred}\n')
         res.append(y_pred)
         true_labels.append(true_label)
 
@@ -92,15 +93,39 @@ def main(args):
                         'threshold': threshold,
                         'multi_class': False}
 
-        wandb.config = config_toxic
-        predicted_labels = multi_hypo(config_toxic)
-        eval_zero(predicted_labels, config_toxic)
+        config_engaging = {'pos_label': [ 'persönliche Erfahrung' ],
+                           'neg_label': '',
+                           'hypo': 'Dieser Text ist eine {}',
+                           'task': 'Sub2_Engaging',
+                           'threshold': threshold,
+                           'multi_class': False}
+
+        config_fact = {'pos_label': [ 'externe Quelle' ],
+                       'neg_label': '',
+                       'hypo': 'Dieser Text ist eine {}',
+                       'task': 'Sub3_FactClaiming',
+                       'threshold': threshold,
+                       'multi_class': False}
+
+        if args.config == 'toxic':
+            config = config_toxic
+        elif args.config == 'engaging':
+            config = config_engaging
+        else:
+            config = config_fact
+
+        wandb.run.config[ 'hypo' ] = config[ 'hypo' ]
+        wandb.run.config[ 'pos_label' ] = config[ 'hypo' ]
+
+        predicted_labels = multi_hypo(config)
+        eval_zero(predicted_labels, config)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--name', type=str, help="name of wandb run")
+    parser.add_argument('--config', type=str, help='name of config')
 
     args = parser.parse_args()
 
