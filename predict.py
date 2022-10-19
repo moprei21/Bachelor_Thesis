@@ -115,7 +115,7 @@ def main(args):
             config = config_fact
 
         wandb.run.config[ 'hypo' ] = config[ 'hypo' ]
-        wandb.run.config[ 'pos_label' ] = config[ 'hypo' ]
+        wandb.run.config[ 'pos_label' ] = config[ 'pos_label' ]
 
         predicted_labels = multi_hypo(config)
         eval_zero(predicted_labels, config)
