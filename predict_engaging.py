@@ -13,7 +13,7 @@ wandb.init(project="ENGAGING")
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
 # make smaller eval file
-df = df.sample(frac=0.3, replace=True, random_state=1)
+df = df.sample(frac=0.2, replace=True, random_state=1)
 
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
 tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
@@ -24,7 +24,6 @@ classifier = transformers.ZeroShotClassificationPipeline(model=nli_model, tokeni
 
 def multi_hypo(config):
     thresholds = np.arange(0.2, 1, 0.2)
-    thresholds = [0.2]
     for threshold in thresholds:
         y_preds = [ ]
         true_labels = [ ]
@@ -110,7 +109,7 @@ def multi_hypo(config):
 
             # Strategy Nr. 4
             if res[ 'externe Quelle' ] > 0.1:
-                if res[ 'Tatsachenbehauptung' ] > threshold:
+                if res[ 'Tatsachenbehauptung' ] > 0.6:
                     strategy_4_total += 1
                     y_pred = 0
 
@@ -122,7 +121,7 @@ def multi_hypo(config):
                     true_labels.append(true_label)
                     continue
 
-            if res[ 'Lösungsvorschlag' ] > 0.6:
+            if res[ 'Lösungsvorschlag' ] > threshold:
                 y_pred = 1
             else:
                 y_pred = 0

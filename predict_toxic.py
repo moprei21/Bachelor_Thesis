@@ -13,16 +13,16 @@ wandb.init(project="TOXIC")
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
 # make smaller eval file
-df = df.sample(frac=0.1, replace=True, random_state=1)
+df = df.sample(frac=0.2, replace=True, random_state=1)
 
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
 tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
 
 classifier = transformers.ZeroShotClassificationPipeline(model=nli_model, tokenizer=tokenizer)
 
+
 def multi_hypo(config):
     thresholds = np.arange(0.2, 1, 0.2)
-    thresholds = [0.2]
     for threshold in thresholds:
         y_preds = [ ]
         true_labels = [ ]
@@ -141,7 +141,7 @@ def multi_hypo(config):
 
             # BASE Strategy
 
-            if res[ 'Beleidigung' ] > 0.5:
+            if res[ 'Beleidigung' ] > threshold:
                 y_pred = 1
             else:
                 y_pred = 0
@@ -162,7 +162,6 @@ def multi_hypo(config):
         recall = recall_score(true_labels, y_preds)
         print(f'Accuracy: {acc}\n Precision: {prec}\n Recall: {recall}\n F1-Score: {f1}')
 
-
         print(
             f'Total Strategy 1: {strategy_1_total}: True = {strategy_1_true}, False = {strategy_1_false} ')
         print(
@@ -174,7 +173,13 @@ def multi_hypo(config):
         print(
             f'Base Strategy: {base_strategy_total}: True = {base_strategy_true}, False = {base_strategy_false}')
 
-        wandb.log({'accuracy': acc, 'precision': prec, 'recall': recall, 'f1': f1, "Strategies": "1-4" })
+        wandb.log({'accuracy': acc, 'precision': prec, 'recall': recall, 'f1': f1, "Strategies": "1-4"})
+        wandb.log({ "strategy1": f'Total Strategy 1: {strategy_1_total}: True = {strategy_1_true}, False = {strategy_1_false} '})
+        wandb.log({"strategy2": f'Total Strategy 2: {strategy_2_total}: True = {strategy_2_true}, False = {strategy_2_false} '})
+        wandb.log( {"strategy3": f'Total Strategy 3: {strategy_3_total}: True = {strategy_3_true}, False = {strategy_3_false} '})
+        wandb.log({ "strategy4": f'Total Strategy 4: {strategy_4_total}: True = {strategy_4_true}, False = {strategy_4_false} '})
+        wandb.log({"base": f'Base Strategy: {base_strategy_total}: True = {base_strategy_true}, False = {base_strategy_false}'})
+
 
         print(f'Accuracy: {acc}\n Precision: {prec}\n Recall: {recall}\n F1-Score: {f1}')
 
@@ -183,22 +188,20 @@ def main(args):
     wandb.run.name = args.name
 
     config = {'pos':
-                        {
-                         "Beleidigung": ["Dieser Kommentar ist eine {}"],
-                         "humoristisch veranlagt": ["Dieser Kommentar ist {}"],
-                         "Zynismus": ["Dieser Kommentar ist {}"],
-                         "Diskriminierung": ["In diesem Kommentar findet man {}"],
-                         "gegen": ["Dieser Kommentar ist {} eine Gruppe gerichtet"]
-                                    }
-                        }
-
+        {
+            "Beleidigung": [ "Dieser Kommentar ist eine {}" ],
+            "humoristisch veranlagt": [ "Dieser Kommentar ist {}" ],
+            "Zynismus": [ "Dieser Kommentar ist {}" ],
+            "Diskriminierung": [ "In diesem Kommentar findet man {}" ],
+            "gegen": [ "Dieser Kommentar ist {} eine Gruppe gerichtet" ]
+        }
+    }
 
     wandb.run.config[ 'hypos' ] = config[ 'pos' ]
 
     multi_hypo(config)
 
     return config
-
 
 
 if __name__ == "__main__":
