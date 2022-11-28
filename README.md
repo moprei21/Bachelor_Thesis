@@ -10,7 +10,7 @@ To find the code on Zero-Shot Text Classification use the Notebook germeval_2021
 
 
 ## Few-Shot
-Run experiments on all subtasks by executing run_toxic.sh, run_engaging.sh, run_fact-sh  
+Run experiments on all subtasks by executing run_toxic.sh, run_engaging.sh, run_fact.sh  
 
 Make sure to have generated all datasets and have an existing Weights and Biases account to visualize the results
 
