@@ -13,7 +13,7 @@ wandb.init(project="TOXIC")
 df = pd.read_csv('data/GermEval21_TestData.csv')
 
 # make smaller eval file
-df = df.sample(frac=0.2, replace=True, random_state=1)
+#df = df.sample(frac=0.2, replace=True, random_state=1)
 
 nli_model = AutoModelForSequenceClassification.from_pretrained(pretrained_model_name_or_path='./pretrain_out/.')
 tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
@@ -21,8 +21,9 @@ tokenizer = AutoTokenizer.from_pretrained("pretrain_out")
 classifier = transformers.ZeroShotClassificationPipeline(model=nli_model, tokenizer=tokenizer)
 
 
-def multi_hypo(config):
+def multi_hypo(config, thresh):
     thresholds = np.arange(0.2, 1, 0.2)
+    thresholds = [thresh]
     for threshold in thresholds:
         y_preds = [ ]
         true_labels = [ ]
@@ -199,7 +200,7 @@ def main(args):
 
     wandb.run.config[ 'hypos' ] = config[ 'pos' ]
 
-    multi_hypo(config)
+    multi_hypo(config, args.threshold)
 
     return config
 
@@ -207,6 +208,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, help="name of wandb run")
+    parser.add_argument('--threshold', type=float, help="threshold of base strategy")
 
     args = parser.parse_args()
 
