@@ -6,14 +6,17 @@ In recent years social media platforms like Facebook, Twitter, etc., have gained
 
 ## Datasets 
 To create the datasets run the follwing script:
-
+```
 create_dataset.sh
-
+```
 ## Zero-Shot 
 To find the code on Zero-Shot Text Classification use the Notebook germeval_2021.ipynb, for GPU access run on Google Colab
 
 ## Few-Shot
-Run experiments on all subtasks by executing run_toxic.sh, run_engaging.sh, run_fact.sh  
+Run experiments on all subtasks by executing the follwing command 
+```
+run_{toxic,engaging,fact}.sh
+```
 
 Make sure to have generated all datasets and have an existing Weights and Biases account to visualize the results
 
